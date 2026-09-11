@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Удаление сотрудников · Начисление{% endblock %}
+
+{% block content %}
+  <section class="panel">
+    <h1>Удалить сотрудников?</h1>
+    <p class="status-warn">Из периода {{ period }} удалятся табель, начисления и выплаты выбранных сотрудников. Карточки сотрудников и ставки сохранятся.</p>
+
+    <ul>
+      {% for employee in employees %}
+        <li>{{ employee.personnel_number }} - {{ employee.full_name }}</li>
+      {% endfor %}
+    </ul>
+
+    <form method="post" action="{% url 'employee_delete' %}">
+      {% csrf_token %}
+      <input type="hidden" name="confirm" value="1">
+      <input type="hidden" name="period" value="{{ period.pk }}">
+      <input type="hidden" name="next" value="{{ next_url }}">
+      {% if delete_all %}
+        <input type="hidden" name="delete_all" value="1">
+      {% else %}
+        {% for employee in employees %}
+          <input type="hidden" name="employee_ids" value="{{ employee.pk }}">
+        {% endfor %}
+      {% endif %}
+      <button class="button" type="submit">Удалить</button>
+      <a class="button secondary" href="{% url 'employee_list' %}">Отмена</a>
+    </form>
+  </section>
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Ставки · Начисление{% endblock %}
+
+{% block content %}
+  <section class="panel">
+    <h1>Ставки: {{ employee.full_name }}</h1>
+
+    <form method="post" class="form-grid" style="margin-top: 20px;">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      {% for field in form %}
+        <div class="field">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {{ field.errors }}
+        </div>
+      {% endfor %}
+      <div>
+        <button class="button" type="submit">Сохранить ставки</button>
+        <a class="button secondary" href="{% url 'employee_list' %}">Назад</a>
+      </div>
+    </form>
+  </section>
+{% endblock %}

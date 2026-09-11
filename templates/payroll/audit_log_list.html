@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Журнал · Начисление{% endblock %}
+
+{% block content %}
+  <section class="panel">
+    <div class="toolbar">
+      <div>
+        <h1>Журнал изменений</h1>
+        <p class="muted">Выберите месяц, чтобы посмотреть журнал на странице или скачать его в TXT.</p>
+      </div>
+    </div>
+
+    <form method="get" class="filter-form">
+      <label>
+        Год
+        <select name="year">
+          {% for year in years %}
+            <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>{{ year }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label>
+        Месяц
+        <select name="month">
+          {% for value, label in months %}
+            <option value="{{ value }}" {% if value == selected_month %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <button class="button" type="submit">Показать</button>
+      <button class="button secondary" type="submit" name="download" value="txt">Скачать TXT</button>
+    </form>
+
+    <p class="muted">Записей за {{ selected_month_name }} {{ selected_year }}: {{ total_logs }}</p>
+
+    {% if logs %}
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Дата</th>
+              <th>Событие</th>
+              <th>Автор</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for log in logs %}
+              <tr>
+                <td>{{ log.created_at|date:"d.m.Y H:i" }}</td>
+                <td>{{ log.display_message }}</td>
+                <td>{{ log.author|default:"-" }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      {% if page_obj.has_other_pages %}
+        <nav class="pagination">
+          {% if page_obj.has_previous %}
+            <a class="button secondary" href="?year={{ selected_year }}&month={{ selected_month }}&page=1">В начало</a>
+            <a class="button secondary" href="?year={{ selected_year }}&month={{ selected_month }}&page={{ page_obj.previous_page_number }}">Назад</a>
+          {% endif %}
+          <span class="muted">Страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }}</span>
+          {% if page_obj.has_next %}
+            <a class="button secondary" href="?year={{ selected_year }}&month={{ selected_month }}&page={{ page_obj.next_page_number }}">Вперёд</a>
+            <a class="button secondary" href="?year={{ selected_year }}&month={{ selected_month }}&page={{ page_obj.paginator.num_pages }}">В конец</a>
+          {% endif %}
+        </nav>
+      {% endif %}
+    {% else %}
+      <p>За выбранный месяц записей нет.</p>
+    {% endif %}
+  </section>
+{% endblock %}

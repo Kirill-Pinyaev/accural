@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Начисление · Главная{% endblock %}
+
+{% block content %}
+  <section class="panel">
+    <h1>Система "Начисление"</h1>
+    <p>Каркас приложения запущен. Сейчас доступно управление расчетными периодами.</p>
+    <p><a class="button" href="{% url 'period_list' %}">Открыть периоды</a></p>
+  </section>
+
+  {% if latest_periods %}
+    <section class="panel" style="margin-top: 20px;">
+      <h2>Последние периоды</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Период</th>
+            <th>Статус</th>
+            <th>Архив</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for period in latest_periods %}
+            <tr>
+              <td>{{ period }}</td>
+              <td>{{ period.get_status_display }}</td>
+              <td>{% if period.is_archived %}Да{% else %}Нет{% endif %}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </section>
+  {% endif %}
+{% endblock %}

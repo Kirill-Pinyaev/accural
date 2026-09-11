@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% block title %}Предпросмотр ставок · Начисление{% endblock %}
+
+{% block content %}
+  <section class="panel">
+    <div class="toolbar">
+      <div>
+        <h1>Предпросмотр импорта ставок</h1>
+        <p class="muted">Строк с ошибками: {{ total_errors }}.</p>
+      </div>
+      <a class="button secondary" href="{% url 'rate_import_upload' %}">Загрузить другой файл</a>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Строка</th>
+            <th>Действие</th>
+            <th>Таб. номер</th>
+            <th>ФИО</th>
+            <th>Организация</th>
+            <th>Проект</th>
+            <th>Должность</th>
+            <th>Тип</th>
+            <th>Час</th>
+            <th>День</th>
+            <th>Проверка</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in rows %}
+            <tr>
+              <td>{{ row.row_number }}</td>
+              <td>{% if row.action == "create" %}Создать{% else %}Обновить{% endif %}</td>
+              <td>{{ row.personnel_number|default:"-" }}</td>
+              <td>{{ row.source_name }}</td>
+              <td>{{ row.organization|default:"-" }}</td>
+              <td>{{ row.project|default:"-" }}</td>
+              <td>{{ row.position|default:"-" }}</td>
+              <td>{{ row.employment_type }}</td>
+              <td>{{ row.hourly_rate|default:"-" }}</td>
+              <td>{{ row.daily_rate|default:"-" }}</td>
+              <td>
+                {% if row.errors %}
+                  <span class="status-error">{{ row.errors|join:", " }}</span>
+                {% elif row.warnings %}
+                  <span class="status-warn">{{ row.warnings|join:", " }}</span>
+                {% else %}
+                  <span class="status-ok">OK</span>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <form method="post" action="{% url 'rate_import_apply' %}" style="margin-top: 18px;">
+      {% csrf_token %}
+      <button class="button" type="submit" {% if total_errors %}disabled{% endif %}>Применить импорт</button>
+    </form>
+  </section>
+{% endblock %}

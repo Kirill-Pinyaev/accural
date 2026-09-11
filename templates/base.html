@@ -1,0 +1,299 @@
+{% load static %}
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Начисление{% endblock %}</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: Arial, sans-serif;
+      background: #f6f7f9;
+      color: #20242a;
+    }
+    body {
+      margin: 0;
+      overflow-x: hidden;
+    }
+    header {
+      background: #ffffff;
+      border-bottom: 1px solid #d9dee7;
+      padding: 12px 24px;
+    }
+    main {
+      width: 100%;
+      box-sizing: border-box;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+    a {
+      color: #0f5ea8;
+    }
+    .brand {
+      font-weight: 700;
+      font-size: 18px;
+    }
+    .panel {
+      background: #ffffff;
+      border: 1px solid #d9dee7;
+      border-radius: 8px;
+      box-sizing: border-box;
+      padding: 24px;
+    }
+    .nav {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: stretch;
+    }
+    .nav a {
+      text-decoration: none;
+    }
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      gap: 24px;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .user-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+    .nav-group {
+      border: 1px solid #d9dee7;
+      border-radius: 8px;
+      padding: 8px 10px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      background: #fbfcfe;
+    }
+    .nav-label {
+      color: #687385;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .nav-links {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .nav-links a {
+      color: #20242a;
+      white-space: nowrap;
+    }
+    .messages {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .message {
+      border: 1px solid #b8d4bd;
+      background: #edf8ef;
+      border-radius: 6px;
+      padding: 10px 12px;
+    }
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .button {
+      background: #0f5ea8;
+      color: #ffffff;
+      border: 0;
+      border-radius: 6px;
+      padding: 9px 13px;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-block;
+      font: inherit;
+    }
+    .button.secondary {
+      background: #eef2f7;
+      color: #20242a;
+      border: 1px solid #cfd6e1;
+    }
+    table {
+      width: max-content;
+      min-width: 100%;
+      border-collapse: collapse;
+      background: #ffffff;
+    }
+    th,
+    td {
+      border-bottom: 1px solid #e2e6ee;
+      padding: 11px 10px;
+      text-align: left;
+      vertical-align: top;
+      overflow-wrap: anywhere;
+    }
+    th {
+      background: #f1f4f8;
+      font-weight: 700;
+    }
+    form.inline {
+      display: inline;
+    }
+    .link-button {
+      background: none;
+      border: 0;
+      color: #0f5ea8;
+      cursor: pointer;
+      font: inherit;
+      padding: 0;
+      text-decoration: underline;
+    }
+    input,
+    select {
+      border: 1px solid #c8d0dc;
+      border-radius: 6px;
+      padding: 8px 10px;
+      font: inherit;
+    }
+    .form-grid {
+      display: grid;
+      gap: 14px;
+      max-width: 420px;
+    }
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+    .muted {
+      color: #687385;
+    }
+    .status-ok {
+      color: #247a39;
+      font-weight: 700;
+    }
+    .status-warn {
+      color: #9a5b00;
+      font-weight: 700;
+    }
+    .status-error {
+      color: #b42318;
+      font-weight: 700;
+    }
+    .table-wrap {
+      max-height: calc(100vh - 260px);
+      overflow: auto;
+    }
+    .sticky-name {
+      position: sticky;
+      left: 0;
+      z-index: 1;
+      min-width: clamp(220px, 18vw, 360px);
+      max-width: clamp(260px, 24vw, 460px);
+      background: #ffffff;
+      box-shadow: 1px 0 0 #e2e6ee;
+    }
+    thead th {
+      position: sticky;
+      top: 0;
+      z-index: 2;
+    }
+    th.sticky-name {
+      z-index: 3;
+      background: #f1f4f8;
+    }
+    .filter-form {
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+    .filter-form label {
+      display: grid;
+      gap: 6px;
+      color: #687385;
+      font-size: 14px;
+    }
+    .pagination {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.55;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-top">
+      <div class="brand">Начисление</div>
+      <nav class="user-actions">
+        {% if request.user.is_authenticated %}
+          <span>{{ request.user.username }}</span>
+          <form class="inline" method="post" action="{% url 'logout' %}">
+            {% csrf_token %}
+            <button class="link-button" type="submit">Выйти</button>
+          </form>
+        {% else %}
+          <a href="{% url 'login' %}">Войти</a>
+        {% endif %}
+      </nav>
+    </div>
+    {% if request.user.is_authenticated %}
+      <div class="nav">
+        <div class="nav-group">
+          <span class="nav-label">Работа</span>
+          <span class="nav-links">
+            <a href="{% url 'accrual_list' %}">Начисление</a>
+            <a href="{% url 'payment_list' %}">Выплаты</a>
+            <a href="{% url 'timesheet_entry_list' %}">Табель</a>
+          </span>
+        </div>
+        <div class="nav-group">
+          <span class="nav-label">Справочники</span>
+          <span class="nav-links">
+            <a href="{% url 'employee_list' %}">Сотрудники</a>
+            <a href="{% url 'period_list' %}">Периоды</a>
+          </span>
+        </div>
+        <div class="nav-group">
+          <span class="nav-label">Контроль</span>
+          <span class="nav-links">
+            <a href="{% url 'audit_log_list' %}">Журнал</a>
+          </span>
+        </div>
+        {% if request.user.is_accountant_admin %}
+          <div class="nav-group">
+            <span class="nav-label">Управление</span>
+            <span class="nav-links">
+              <a href="{% url 'app_user_list' %}">Пользователи</a>
+              <a href="{% url 'rate_import_upload' %}">Импорт ставок</a>
+              <a href="{% url 'timesheet_import_upload' %}">Импорт табеля</a>
+            </span>
+          </div>
+        {% endif %}
+      </div>
+    {% endif %}
+  </header>
+  <main>
+    {% if messages %}
+      <div class="messages">
+        {% for message in messages %}
+          <div class="message">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+    {% block content %}{% endblock %}
+  </main>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+{% load payroll_format %}
+
+{% block title %}Начисление · Начисление{% endblock %}
+
+{% block content %}
+  <section class="panel">
+    <div class="toolbar">
+      <div>
+        <h1>Начисление</h1>
+        <p class="muted">Нулевые сотрудники скрыты по умолчанию и доступны через фильтр.</p>
+      </div>
+      {% if selected_period %}
+        <a class="button secondary" href="{% url 'accrual_export' %}?period={{ selected_period.pk }}{% if filters.fio %}&fio={{ filters.fio|urlencode }}{% endif %}{% if filters.organization %}&organization={{ filters.organization|urlencode }}{% endif %}{% if filters.project %}&project={{ filters.project|urlencode }}{% endif %}{% if filters.position %}&position={{ filters.position|urlencode }}{% endif %}{% if filters.employment_type %}&employment_type={{ filters.employment_type|urlencode }}{% endif %}{% if filters.show_zero %}&show_zero=1{% endif %}{% if filters.only_zero %}&only_zero=1{% endif %}">Экспорт Excel</a>
+      {% endif %}
+    </div>
+
+    <form method="get" class="filter-form">
+      <div class="field">
+        <label for="period">Период</label>
+        <select id="period" name="period" data-auto-submit>
+          {% if not selected_period %}
+            <option value="">Периоды не созданы</option>
+          {% endif %}
+          {% for period in periods %}
+            <option value="{{ period.pk }}" {% if selected_period.pk == period.pk %}selected{% endif %}>{{ period }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <label for="fio">
+        ФИО
+        <input id="fio" name="fio" value="{{ filters.fio }}" placeholder="Часть ФИО">
+      </label>
+      <label for="organization">
+        Организация
+        <select id="organization" name="organization" data-auto-submit>
+          <option value="">Все</option>
+          {% for organization in filter_options.organizations %}
+            <option value="{{ organization }}" {% if filters.organization == organization %}selected{% endif %}>{{ organization }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label for="project">
+        Проект
+        <select id="project" name="project" data-auto-submit>
+          <option value="">Все</option>
+          {% for project in filter_options.projects %}
+            <option value="{{ project }}" {% if filters.project == project %}selected{% endif %}>{{ project }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label for="position">
+        Должность
+        <select id="position" name="position" data-auto-submit>
+          <option value="">Все</option>
+          {% for position in filter_options.positions %}
+            <option value="{{ position }}" {% if filters.position == position %}selected{% endif %}>{{ position }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label for="employment_type">
+        Тип
+        <select id="employment_type" name="employment_type" data-auto-submit>
+          <option value="">Все</option>
+          {% for value, label in filter_options.employment_types %}
+            <option value="{{ value }}" {% if filters.employment_type == value %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </label>
+      <label for="show_zero">
+        Нулевые
+        <span><input id="show_zero" name="show_zero" type="checkbox" value="1" {% if filters.show_zero %}checked{% endif %}> Показать</span>
+      </label>
+      <label for="only_zero">
+        Только нулевые
+        <span><input id="only_zero" name="only_zero" type="checkbox" value="1" {% if filters.only_zero %}checked{% endif %}> Показать</span>
+      </label>
+      <button class="button" type="submit">Показать</button>
+    </form>
+
+    {% if selected_period and not selected_period.can_edit %}
+      <p class="status-warn">Период закрыт или архивный. Редактирование запрещено.</p>
+    {% endif %}
+
+    {% if rows %}
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th class="sticky-name">ФИО</th>
+              <th>Таб. номер</th>
+              <th>Организация</th>
+              <th>Проект</th>
+              <th>Должность</th>
+              <th>Тип</th>
+              <th>Дни</th>
+              <th>Часы</th>
+              <th>Ставка день</th>
+              <th>Ставка час</th>
+              <th>Начислено дни</th>
+              <th>Начислено часы</th>
+              <th>КТУ</th>
+              <th>Итого с КТУ</th>
+              <th>Оклад</th>
+              <th>Премия</th>
+              <th>Итого</th>
+              <th>ЗП 1С</th>
+              <th>Суточные 1С</th>
+              <th>Выплаты</th>
+              <th>Плюс пред.</th>
+              <th>Минус пред.</th>
+              <th>Итого выдано</th>
+              <th>Остаток</th>
+              {% if selected_period.can_edit %}
+                <th>Действия</th>
+              {% endif %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for row in rows %}
+              <tr>
+                <td class="sticky-name">{{ row.employee.full_name }}</td>
+                <td>{{ row.employee.personnel_number }}</td>
+                <td>{{ row.employee.organization|default:"-" }}</td>
+                <td>{{ row.employee.project|default:"-" }}</td>
+                <td>{{ row.employee.position|default:"-" }}</td>
+                <td>{{ row.employee.get_employment_type_display }}</td>
+                <td>{{ row.entry.days }}</td>
+                <td>{{ row.entry.hours|spaced_number:2 }}</td>
+                <td>{{ row.daily_rate|spaced_number:2 }}</td>
+                <td>{{ row.hourly_rate|spaced_number:2 }}</td>
+                <td>{{ row.accrued_days|spaced_number:2 }}</td>
+                <td>{{ row.accrued_hours|spaced_number:2 }}</td>
+                <td>{{ row.record.ktu|spaced_number:3 }}</td>
+                <td>{{ row.total_with_ktu|spaced_number:2 }}</td>
+                <td>{{ row.record.salary|spaced_number:2 }}</td>
+                <td>{{ row.record.premium|spaced_number:2 }}</td>
+                <td>{{ row.total|spaced_number:2 }}</td>
+                <td>{{ row.record.salary_1c|spaced_number:2 }}</td>
+                <td>{{ row.record.daily_allowance_1c|spaced_number:2 }}</td>
+                <td>{{ row.payments_total|spaced_number:2 }}</td>
+                <td>{{ row.record.previous_plus|spaced_number:2 }}</td>
+                <td>
+                  {{ row.record.previous_minus|spaced_number:2 }}
+                  {% if row.record.previous_balance_manual_override %}
+                    <span class="status-warn">ручн.</span>
+                  {% endif %}
+                </td>
+                <td>{{ row.issued_total|spaced_number:2 }}</td>
+                <td>
+                  {% if row.balance < 0 %}
+                    <span class="status-error">{{ row.balance|spaced_number:2 }}</span>
+                  {% elif row.balance > 0 %}
+                    <span class="status-ok">+{{ row.balance|spaced_number:2 }}</span>
+                  {% else %}
+                    {{ row.balance|spaced_number:2 }}
+                  {% endif %}
+                </td>
+                {% if selected_period.can_edit %}
+                  <td>
+                    <a href="{% url 'accrual_edit' row.record.pk %}?next={{ request.get_full_path|urlencode }}">{% if row.is_zero and request.user.is_accountant_admin %}Оклад{% else %}Изменить{% endif %}</a>
+                  </td>
+                {% endif %}
+              </tr>
+            {% endfor %}
+          </tbody>
+          <tfoot>
+            <tr>
+              <th colspan="6">Итого</th>
+              <th>{{ totals.days|spaced_number:0 }}</th>
+              <th>{{ totals.hours|spaced_number:2 }}</th>
+              <th></th>
+              <th></th>
+              <th>{{ totals.accrued_days|spaced_number:2 }}</th>
+              <th>{{ totals.accrued_hours|spaced_number:2 }}</th>
+              <th></th>
+              <th>{{ totals.total_with_ktu|spaced_number:2 }}</th>
+              <th>{{ totals.salary|spaced_number:2 }}</th>
+              <th>{{ totals.premium|spaced_number:2 }}</th>
+              <th>{{ totals.total|spaced_number:2 }}</th>
+              <th>{{ totals.salary_1c|spaced_number:2 }}</th>
+              <th>{{ totals.daily_allowance_1c|spaced_number:2 }}</th>
+              <th>{{ totals.payments_total|spaced_number:2 }}</th>
+              <th>{{ totals.previous_plus|spaced_number:2 }}</th>
+              <th>{{ totals.previous_minus|spaced_number:2 }}</th>
+              <th>{{ totals.issued_total|spaced_number:2 }}</th>
+              <th>{{ totals.balance|spaced_number:2 }}</th>
+              {% if selected_period.can_edit %}
+                <th></th>
+              {% endif %}
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    {% elif has_accrual_rows %}
+      <p>По выбранным фильтрам нет строк начисления.</p>
+    {% else %}
+      <p>Для выбранного периода нет строк табеля. Сначала загрузите табель.</p>
+    {% endif %}
+  </section>
+{% endblock %}
+
+{% block scripts %}
+  {% load static %}
+  <script src="{% static 'payroll/auto_submit.js' %}" defer></script>
+{% endblock %}

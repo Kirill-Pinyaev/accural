@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block title %}Редактирование начисления · Начисление{% endblock %}
+
+{% block content %}
+  <section class="panel">
+    <h1>Начисление: {{ record.employee.full_name }}</h1>
+    <p class="muted">Период: {{ record.period }}</p>
+
+    {% if not record.period.can_edit %}
+      <p class="status-warn">Период закрыт или архивный. Редактирование запрещено.</p>
+    {% endif %}
+
+    <form method="post" class="form-grid">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ next_url }}">
+      {{ form.non_field_errors }}
+      {% for field in form %}
+        <div class="field">
+          <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {{ field }}
+          {{ field.errors }}
+        </div>
+      {% endfor %}
+      <div>
+        <button class="button" type="submit" {% if not record.period.can_edit %}disabled{% endif %}>Сохранить</button>
+        {% if next_url %}
+          <a class="button secondary" href="{{ next_url }}">Назад</a>
+        {% else %}
+          <a class="button secondary" href="{% url 'accrual_list' %}">Назад</a>
+        {% endif %}
+      </div>
+    </form>
+  </section>
+{% endblock %}

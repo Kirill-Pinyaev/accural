@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block title %}Удаление периодов · Начисление{% endblock %}
+
+{% block content %}
+  <section class="panel">
+    <h1>Удалить периоды?</h1>
+    <p class="status-warn">Вместе с периодами удалятся связанные ставки, табель, начисления и выплаты. Действие нельзя отменить.</p>
+
+    <ul>
+      {% for period in periods %}
+        <li>{{ period }}</li>
+      {% endfor %}
+    </ul>
+
+    <form method="post" action="{% url 'period_delete' %}">
+      {% csrf_token %}
+      <input type="hidden" name="confirm" value="1">
+      {% if delete_all %}
+        <input type="hidden" name="delete_all" value="1">
+      {% else %}
+        {% for period in periods %}
+          <input type="hidden" name="period_ids" value="{{ period.pk }}">
+        {% endfor %}
+      {% endif %}
+      <button class="button" type="submit">Удалить</button>
+      <a class="button secondary" href="{% url 'period_list' %}">Отмена</a>
+    </form>
+  </section>
+{% endblock %}

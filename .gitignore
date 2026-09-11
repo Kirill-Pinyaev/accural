@@ -1,0 +1,13 @@
+.env
+.venv/
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.xlsx
+/staticfiles/
+/media/
+.pytest_cache/
+.mypy_cache/
+/build/
+/dist/
+/python-*-amd64.exe

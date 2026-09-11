@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Сотрудники · Начисление{% endblock %}
+
+{% block content %}
+  <section class="panel">
+    <div class="toolbar">
+      <div>
+        <h1>Сотрудники</h1>
+        <p class="muted">Табельные номера создаются автоматически в формате 000001.</p>
+      </div>
+      {% if request.user.is_accountant_admin %}
+        <div>
+          <a class="button secondary" href="{% url 'rate_import_upload' %}">Импорт ставок</a>
+          <a class="button" href="{% url 'employee_create' %}">Добавить сотрудника</a>
+        </div>
+      {% endif %}
+    </div>
+
+    <form method="get" class="form-grid" style="margin-bottom: 18px;">
+      <div class="field">
+        <label for="period">Период для удаления из месяца</label>
+        <select id="period" name="period" onchange="this.form.submit()">
+          {% if not selected_period %}
+            <option value="">Периоды не созданы</option>
+          {% endif %}
+          {% for period in periods %}
+            <option value="{{ period.pk }}" {% if selected_period.pk == period.pk %}selected{% endif %}>{{ period }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </form>
+
+    {% if employees %}
+      <form method="post" action="{% url 'employee_delete' %}">
+        {% csrf_token %}
+        {% if selected_period %}
+          <input type="hidden" name="period" value="{{ selected_period.pk }}">
+        {% endif %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        {% if request.user.is_accountant_admin %}
+          <div style="margin-bottom: 12px;">
+            <button class="button secondary" type="submit">Удалить выбранных из периода</button>
+            <button class="button secondary" type="submit" name="delete_all" value="1">Удалить всех из периода</button>
+          </div>
+        {% endif %}
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                {% if request.user.is_accountant_admin %}
+                  <th></th>
+                {% endif %}
+                <th>Таб. номер</th>
+                <th>ФИО</th>
+                <th>Организация</th>
+                <th>Проект</th>
+                <th>Должность</th>
+                <th>Тип</th>
+                <th>Ставка час</th>
+                <th>Ставка день</th>
+                <th>Статус</th>
+                {% if request.user.is_accountant_admin %}
+                  <th>Действия</th>
+                {% endif %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for employee in employees %}
+                <tr>
+                  {% if request.user.is_accountant_admin %}
+                    <td><input type="checkbox" name="employee_ids" value="{{ employee.pk }}"></td>
+                  {% endif %}
+                  <td>{{ employee.personnel_number }}</td>
+                  <td>{{ employee.full_name }}</td>
+                  <td>{{ employee.organization|default:"-" }}</td>
+                  <td>{{ employee.project|default:"-" }}</td>
+                  <td>{{ employee.position|default:"-" }}</td>
+                  <td>{{ employee.get_employment_type_display }}</td>
+                  {% with rate=employee.current_rates.0 %}
+                    <td>{{ rate.hourly_rate|default:"-" }}</td>
+                    <td>{{ rate.daily_rate|default:"-" }}</td>
+                  {% endwith %}
+                  <td>{{ employee.get_status_display }}</td>
+                  {% if request.user.is_accountant_admin %}
+                    <td>
+                      <a href="{% url 'employee_update' employee.pk %}">Изменить</a>
+                      ·
+                      <a href="{% url 'rate_edit' employee.pk %}">Ставки</a>
+                    </td>
+                  {% endif %}
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </form>
+    {% else %}
+      <p>Сотрудники пока не созданы.</p>
+    {% endif %}
+  </section>
+{% endblock %}

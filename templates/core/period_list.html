@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block title %}Периоды · Начисление{% endblock %}
+
+{% block content %}
+  <section class="panel">
+    <div class="toolbar">
+      <div>
+        <h1>Расчетные периоды</h1>
+        <p class="muted">Месяцы можно закрывать от изменений и открывать заново при необходимости.</p>
+      </div>
+      {% if request.user.is_accountant_admin %}
+        <a class="button" href="{% url 'period_create' %}">Создать период</a>
+      {% endif %}
+    </div>
+
+    {% if periods %}
+      {% if request.user.is_accountant_admin %}
+        <form id="period-delete-form" method="post" action="{% url 'period_delete' %}">
+          {% csrf_token %}
+        </form>
+        <div style="margin-bottom: 12px;">
+          <button class="button secondary" type="submit" form="period-delete-form">Удалить выбранные</button>
+          <button class="button secondary" type="submit" form="period-delete-form" name="delete_all" value="1">Удалить все</button>
+        </div>
+      {% endif %}
+        <table>
+          <thead>
+            <tr>
+              {% if request.user.is_accountant_admin %}
+                <th></th>
+              {% endif %}
+              <th>Период</th>
+              <th>Статус</th>
+              <th>Архив</th>
+              <th>Редактирование</th>
+              {% if request.user.is_accountant_admin %}
+                <th>Действия</th>
+              {% endif %}
+            </tr>
+          </thead>
+          <tbody>
+            {% for period in periods %}
+              <tr>
+                {% if request.user.is_accountant_admin %}
+                  <td><input form="period-delete-form" type="checkbox" name="period_ids" value="{{ period.pk }}"></td>
+                {% endif %}
+                <td>{{ period }}</td>
+                <td>{{ period.get_status_display }}</td>
+                <td>{% if period.is_archived %}Да{% else %}Нет{% endif %}</td>
+                <td>{% if period.can_edit %}Разрешено{% else %}Запрещено{% endif %}</td>
+                {% if request.user.is_accountant_admin %}
+                  <td>
+                    {% if period.is_open %}
+                      <form class="inline" method="post" action="{% url 'period_close' period.pk %}">
+                        {% csrf_token %}
+                        <button class="button secondary" type="submit">Закрыть</button>
+                      </form>
+                    {% else %}
+                      <form class="inline" method="post" action="{% url 'period_reopen' period.pk %}">
+                        {% csrf_token %}
+                        <button class="button secondary" type="submit">Открыть</button>
+                      </form>
+                    {% endif %}
+                  </td>
+                {% endif %}
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+    {% else %}
+      <p>Периоды пока не созданы.</p>
+    {% endif %}
+  </section>
+{% endblock %}

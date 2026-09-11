@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Табель · Начисление{% endblock %}
+
+{% block content %}
+  <section class="panel">
+    <div class="toolbar">
+      <div>
+        <h1>Табель</h1>
+        <p class="muted">Дни и часы импортируются по одноименным колонкам; порядок колонок в файле не важен.</p>
+      </div>
+      {% if request.user.is_accountant_admin %}
+        <a class="button" href="{% url 'timesheet_import_upload' %}">Импорт табеля</a>
+      {% endif %}
+    </div>
+
+    <form method="get" class="form-grid" style="margin-bottom: 18px;">
+      <div class="field">
+        <label for="period">Период</label>
+        <select id="period" name="period" onchange="this.form.submit()">
+          {% if not selected_period %}
+            <option value="">Периоды не созданы</option>
+          {% endif %}
+          {% for period in periods %}
+            <option value="{{ period.pk }}" {% if selected_period.pk == period.pk %}selected{% endif %}>{{ period }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </form>
+
+    {% if entries %}
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Таб. номер</th>
+              <th>Сотрудник</th>
+              <th>Дни</th>
+              <th>Часы</th>
+              <th>ФИО из файла</th>
+              <th>Обновлено</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for entry in entries %}
+              <tr>
+                <td>{{ entry.employee.personnel_number }}</td>
+                <td>{{ entry.employee.full_name }}</td>
+                <td>{{ entry.days }}</td>
+                <td>{{ entry.hours }}</td>
+                <td>{{ entry.source_name|default:"-" }}</td>
+                <td>{{ entry.updated_at|date:"d.m.Y H:i" }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    {% else %}
+      <p>Для выбранного периода табель еще не загружен.</p>
+    {% endif %}
+  </section>
+{% endblock %}
